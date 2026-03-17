@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bless Vegs</title>
+<link rel="manifest" href="manifest.json">
+<style>
+body{font-family:Arial;margin:0;background:#eef5ee}
+header{background:#2f7d32;color:white;text-align:center;padding:18px;font-size:24px}
+.container{max-width:900px;margin:auto;padding:20px}
+.card{background:white;border-radius:14px;padding:16px;margin-bottom:18px;box-shadow:0 6px 14px rgba(0,0,0,0.08)}
+.product{display:flex;align-items:center;gap:12px;margin:10px 0}
+.product img{width:70px;height:70px;object-fit:cover;border-radius:10px}
+.info{flex:1}
+.qty{width:70px;padding:6px}
+input,textarea{width:100%;padding:8px;margin-top:5px;margin-bottom:10px}
+button{width:100%;padding:14px;border:none;border-radius:10px;font-size:16px;cursor:pointer;margin-top:10px}
+.whatsapp{background:#25D366;color:white}
+.tikkie{background:#ff9800;color:white}
+.total{font-size:20px;text-align:right;margin-top:10px}
+.stock{font-size:12px;color:#666}
+.adminbtn{background:#333;color:white}
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<header>🌱 Bless Vegs – Verse Biologische Groenten</header>
+
+<div class="container">
+
+<div class="card">
+<h3>🧑‍🌾 Klantgegevens</h3>
+<label>Naam</label>
+<input id="naam" placeholder="Naam">
+<label>Adres</label>
+<textarea id="adres" placeholder="Adres"></textarea>
+</div>
+
+<div class="card">
+<h3>🥦 Groenten bestellen</h3>
+<div id="productlijst"></div>
+<div class="total">Totaal: €<span id="totaal">0.00</span></div>
+<button class="whatsapp" onclick="bestelWhatsApp()">Bestellen via WhatsApp</button>
+<button class="tikkie" onclick="betaalTikkie()">Betaal met Tikkie</button>
+</div>
+
+<div class="card">
+<h3>📦 Wekelijkse groentepakketten</h3>
+<div class="product">
+<div class="info">Klein pakket €10</div>
+<input class="qty" type="number" id="pakket_klein" value="0" min="0">
+</div>
+
+<div class="product">
+<div class="info">Groot pakket €15</div>
+<input class="qty" type="number" id="pakket_groot" value="0" min="0">
+</div>
+</div>
+
+<div class="card">
+<h3>⚙️ Beheer (voor Bless Vegs)</h3>
+<button class="adminbtn" onclick="toggleAdmin()">Open beheer</button>
+<div id="admin" class="hidden">
+
+<h4>Nieuw product toevoegen</h4>
+<input id="nieuwNaam" placeholder="Naam groente">
+<input id="nieuwPrijs" placeholder="Prijs per kilo">
+<input id="nieuwVoorraad" placeholder="Voorraad kg">
+<input id="nieuwFoto" placeholder="Foto link">
+<button onclick="productToevoegen()">Product toevoegen</button>
+
+<h4>Producten beheren</h4>
+<div id="adminlijst"></div>
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+const whatsappNummer = "31685122481"
+const tikkieLink = "https://tikkie.me/pay/example"
+
+let producten=[
+{name:"Antroewa",prijs:4,voorraad:20,id:"antroewa",foto:"https://upload.wikimedia.org/wikipedia/commons/6/6f/Garden_egg.jpg"},
+{name:"Amsoi",prijs:3,voorraad:15,id:"amsoi",foto:"https://upload.wikimedia.org/wikipedia/commons/2/2d/Choy_sum.jpg"},
+{name:"Bitawieri",prijs:3.5,voorraad:15,id:"bitawieri",foto:"https://upload.wikimedia.org/wikipedia/commons/3/37/Amaranthus_leaves.jpg"},
+{name:"Klaroen",prijs:3.5,voorraad:10,id:"klaroen",foto:"https://upload.wikimedia.org/wikipedia/commons/3/37/Amaranthus_leaves.jpg"},
+{name:"Surinaamse selderij",prijs:2.5,voorraad:12,id:"selderij",foto:"https://upload.wikimedia.org/wikipedia/commons/3/3e/Celery.jpg"}
+]
+
+function render(){
+let html=""
+
+producten.forEach(p=>{
+html+=`<div class="product">
+<img src="${p.foto}">
+<div class="info">
+<b>${p.name}</b><br>
+€${p.prijs} per kg <span class="stock">(${p.voorraad} kg beschikbaar)</span>
+</div>
+<input class="qty" type="number" id="${p.id}" value="0" min="0">
+</div>`
+})
+
+document.getElementById("productlijst").innerHTML=html
+
+let admin=""
+producten.forEach((p,i)=>{
+admin+=`${p.name} – €${p.prijs} – voorraad ${p.voorraad}kg <button onclick="verwijder(${i})">Verwijder</button><br>`
+})
+
+document.getElementById("adminlijst").innerHTML=admin
+}
+
+render()
+
+setInterval(bereken,500)
+
+function bereken(){
+let totaal=0
+
+producten.forEach(p=>{
+let veld=document.getElementById(p.id)
+if(veld){
+totaal+=veld.value*p.prijs
+}
+})
+
+let klein=document.getElementById("pakket_klein").value
+let groot=document.getElementById("pakket_groot").value
+
+totaal+=klein*10
+totaal+=groot*15
+
+document.getElementById("totaal").innerText=totaal.toFixed(2)
+}
+
+function bestelWhatsApp(){
+
+let naam=document.getElementById("naam").value
+let adres=document.getElementById("adres").value
+
+let bericht=`Nieuwe bestelling Bless Vegs%0A`
+bericht+=`Naam: ${naam}%0A`
+bericht+=`Adres: ${adres}%0A%0A`
+
+producten.forEach(p=>{
+let aantal=document.getElementById(p.id).value
+if(aantal>0){
+bericht+=`${p.name}: ${aantal} kg%0A`
+}
+})
+
+let klein=document.getElementById("pakket_klein").value
+let groot=document.getElementById("pakket_groot").value
+
+if(klein>0) bericht+=`Klein pakket x${klein}%0A`
+if(groot>0) bericht+=`Groot pakket x${groot}%0A`
+
+bericht+=`%0ATotaal: €${document.getElementById("totaal").innerText}`
+
+window.open(`https://wa.me/${whatsappNummer}?text=${bericht}`)
+
+}
+
+function betaalTikkie(){
+let bedrag=document.getElementById("totaal").innerText
+window.open(`${tikkieLink}?amount=${bedrag}`)
+}
+
+function toggleAdmin(){
+let a=document.getElementById("admin")
+a.classList.toggle("hidden")
+}
+
+function productToevoegen(){
+
+let naam=document.getElementById("nieuwNaam").value
+let prijs=parseFloat(document.getElementById("nieuwPrijs").value)
+let voorraad=parseInt(document.getElementById("nieuwVoorraad").value)
+let foto=document.getElementById("nieuwFoto").value
+
+let id=naam.toLowerCase().replace(/ /g,"")
+
+producten.push({name:naam,prijs:prijs,voorraad:voorraad,id:id,foto:foto})
+
+render()
+
+}
+
+function verwijder(i){
+producten.splice(i,1)
+render()
+}
+
+</script>
+
+</body>
+</html>
