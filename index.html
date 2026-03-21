@@ -70,8 +70,8 @@ button{border:none;border-radius:16px;padding:14px 16px;font-size:15px;font-weig
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
       <div class="badges">
         <span class="badge">Minimale bestelling €15</span>
-        <span class="badge">Afhalen gratis</span>
-        <span class="badge">Bezorgen + €5</span>
+        <span class="badge">Flex ophalen op afspraak</span>
+        <span class="badge">Bezorgen vanaf €5</span>
         <span class="badge">Prijs per kg / 100g / stuk</span>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -101,8 +101,8 @@ button{border:none;border-radius:16px;padding:14px 16px;font-size:15px;font-weig
         <textarea id="adres" placeholder="Adres"></textarea>
         <label>Levering</label>
         <select id="levering">
-          <option value="Afhalen">Afhalen (gratis)</option>
-          <option value="Bezorgen">Bezorgen (+€5)</option>
+          <option value="Afhalen">Flex ophalen (adres na bestelling)</option>
+          <option value="Bezorgen">Bezorgen (vanaf €5)</option>
         </select>
       </div>
 
@@ -125,7 +125,7 @@ button{border:none;border-radius:16px;padding:14px 16px;font-size:15px;font-weig
           <img src="blessvegs-logo.png" alt="Bless Vegs klein logo" style="width:64px;height:64px;object-fit:cover;border-radius:50%;box-shadow:var(--shadow)" />
           <div>
             <h2 style="margin:0">🧾 Samenvatting</h2>
-            <div class="small">Herkenbaar logo voor Bless Vegs</div>
+            
           </div>
         </div>
         <div id="summaryPreview" class="summary-box small">Nog geen producten gekozen.</div>
@@ -136,7 +136,7 @@ button{border:none;border-radius:16px;padding:14px 16px;font-size:15px;font-weig
           <button class="btn-green" onclick="submitOrderWhatsApp()">Bestel via WhatsApp</button>
           <button class="btn-orange" onclick="payIdeal()">Betaal via Tikkie</button>
         </div>
-        <p class="small" style="margin-top:10px">De betaal knop werkt nu in Tikkie-modus. De klant bestelt via WhatsApp en jij stuurt daarna een Tikkie of betaalverzoek.</p>
+        
       </div>
 
       <div class="card hidden" id="adminSection">
@@ -241,12 +241,6 @@ button{border:none;border-radius:16px;padding:14px 16px;font-size:15px;font-weig
       <button class="btn-soft" onclick="closeAdminModal()">Annuleren</button>
     </div>
   </div>
-</div>
-
-<div class="bottom-bar" id="bottomBar">
-  <button onclick="window.scrollTo({top:0,behavior:'smooth'})">🏠 Home</button>
-  <button onclick="document.getElementById('productList').scrollIntoView({behavior:'smooth'})">🥦 Producten</button>
-  <button onclick="window.scrollTo({top:0,behavior:'smooth'})">⭐ Info</button>
 </div>
 
 <script>
@@ -368,7 +362,7 @@ function updateSummary(){
   const box = document.getElementById('summaryPreview');
   const total = document.getElementById('totaal');
   const delivery = document.getElementById('deliveryPreview');
-  delivery.textContent = order.levering === 'Bezorgen' ? `Bezorgen + €${CONFIG.deliveryFee}` : 'Afhalen';
+  delivery.textContent = order.levering === 'Bezorgen' ? `Bezorgen vanaf €${CONFIG.deliveryFee}` : 'Flex ophalen (adres volgt)';
   if(!order.items.length) box.innerHTML = 'Nog geen producten gekozen.';
   else box.innerHTML = order.items.map(i => `${escapeHtml(i.name)} – ${i.qty} ${i.unit} = €${euro(i.lineTotal)}`).join('<br>') + (order.delivery ? `<br>Bezorgen = €${euro(order.delivery)}` : '');
   total.textContent = euro(order.totaal);
@@ -421,7 +415,9 @@ function buildWhatsAppMessage(order){
   msg += `👤 Naam: ${naam || '-'}\n`;
   msg += `📞 Telefoon: ${telefoon || '-'}\n`;
   msg += `📍 Adres: ${adres || '-'}\n`;
-  msg += `🚚 Levering: ${order.levering}${order.delivery ? ' (+€5)' : ''}\n\n`;
+  msg += `🚚 Levering: ${order.levering === 'Bezorgen' ? 'Bezorgen (vanaf €5, afhankelijk van afstand)' : 'Flex ophalen (adres volgt na bestelling)'}
+
+`;
   msg += '*🛒 Bestelling:*\n';
   order.items.forEach(i => { msg += `- ${i.name}: ${i.qty} ${i.unit} = €${euro(i.lineTotal)}\n`; });
   if(order.delivery) msg += `\n🚚 Bezorgkosten: €${euro(order.delivery)}\n`;
