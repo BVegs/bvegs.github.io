@@ -1,1 +1,20 @@
-
+{
+  "name": "Bless Vegs",
+  "short_name": "BlessVegs",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#14532d",
+  "theme_color": "#14532d",
+  "icons": [
+    {
+      "src": "blessvegs-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "blessvegs-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
