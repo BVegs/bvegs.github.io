@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bless Vegs</title>
+  <meta name="description" content="Bless Vegs - biologisch geteelde groenten uit eigen tuin." />
+  <meta name="theme-color" content="#14532d" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --green-dark: #0f3d22;
+      --green: #14532d;
+      --green-mid: #1d6a38;
+      --green-light: #eef7ee;
+      --bg: #f5f7f4;
+      --card: #ffffff;
+      --text: #18221b;
+      --muted: #5d6a60;
+      --border: #dce7dd;
+      --danger: #a61b1b;
+      --gold: #f7d36b;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .topbar {
+      background: linear-gradient(180deg, var(--green-dark), var(--green));
+      color: white;
+      padding: 18px 16px 24px;
+    }
+
+    .wrap {
+      max-width: 1150px;
+      margin: 0 auto;
+    }
+
+    .nav-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-logo {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.08);
+      padding: 8px;
+      flex-shrink: 0;
+    }
+
+    .brand-text h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      line-height: 1.05;
+    }
+
+    .brand-text p {
+      margin: 6px 0 0;
+      opacity: 0.95;
+      font-size: 0.97rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn,
+    .nav-links a,
+    button {
+      border: none;
+      cursor: pointer;
+      border-radius: 12px;
+      padding: 11px 15px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      transition: transform 0.05s ease, opacity 0.2s ease;
+    }
+
+    .btn:hover,
+    .nav-links a:hover,
+    button:hover {
+      opacity: 0.94;
+    }
+
+    .btn:active,
+    .nav-links a:active,
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .btn-white {
+      background: white;
+      color: var(--green-dark);
+    }
+
+    .btn-ghost {
+      background: rgba(255,255,255,0.12);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: white;
+    }
+
+    .btn-dark {
+      background: #18221b;
+      color: white;
+    }
+
+    .hero {
+      padding: 22px 16px 12px;
+      background: linear-gradient(180deg, var(--green-mid), var(--bg) 100%);
+    }
+
+    .hero-card,
+    .section-card,
+    .product-card,
+    .agent-card,
+    .info-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .hero-card,
+    .info-card,
+    .section-card,
+    .agent-card {
+      padding: 22px;
+    }
+
+    .hero-card h2,
+    .section-title,
+    .products-title {
+      margin-top: 0;
+    }
+
+    .hero-actions,
+    .tools,
+    .product-actions,
+    .assistant-form {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .hero-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .hero-meta div {
+      background: var(--green-light);
+      border-radius: 14px;
+      padding: 12px;
+      text-align: center;
+      font-weight: 700;
+      color: var(--green-dark);
+      font-size: 0.94rem;
+    }
+
+    .info-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .section,
+    .products-section,
+    .agents-section {
+      padding: 12px 16px;
+    }
+
+    .section-text,
+    .hero-card p,
+    .info-card p,
+    .agent-card p,
+    .products-top p {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .products-top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+
+    .products-top p {
+      margin: 0;
+    }
+
+    .search-input,
+    .assistant-input {
+      min-width: 220px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+      background: white;
+      font-size: 0.96rem;
+      flex: 1;
+    }
+
+    .search-input:focus,
+    .assistant-input:focus {
+      border-color: var(--green);
+    }
+
+    .status {
+      background: #e8f5e9;
+      color: var(--green-dark);
+      border: 1px solid #cfe7d2;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .status.error {
+      background: #fdeaea;
+      border-color: #f3caca;
+      color: var(--danger);
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+      gap: 16px;
+    }
+
+    .product-card {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+    }
+
+    .product-image-wrap {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      background: #edf4ed;
+      overflow: hidden;
+    }
+
+    .product-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-placeholder {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      color: var(--green-dark);
+      font-size: 1.1rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #edf7ee, #d8ead9);
+    }
+
+    .discount-badge,
+    .stock-badge {
+      position: absolute;
+      top: 12px;
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    }
+
+    .discount-badge {
+      left: 12px;
+      background: var(--gold);
+      color: #4f3c00;
+    }
+
+    .stock-badge {
+      right: 12px;
+      background: rgba(20,83,45,0.92);
+      color: white;
+    }
+
+    .product-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .product-title {
+      margin: 0;
+      font-size: 1.15rem;
+      line-height: 1.2;
+    }
+
+    .product-desc {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      min-height: 44px;
+      font-size: 0.95rem;
+    }
+
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .price-main {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--green-dark);
+    }
+
+    .price-old {
+      font-size: 1rem;
+      color: #8b8b8b;
+      text-decoration: line-through;
+    }
+
+    .stock-text {
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .agents-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .faq-list,
+    .assistant-messages {
+      display: grid;
+      gap: 10px;
+    }
+
+    .faq-item {
+      background: var(--green-light);
+      border-radius: 12px;
+      padding: 12px;
+      color: var(--green-dark);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .assistant-box {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fafdf9;
+    }
+
+    .assistant-bubble {
+      padding: 12px;
+      border-radius: 12px;
+      line-height: 1.55;
+      font-size: 0.95rem;
+    }
+
+    .assistant-bubble.bot {
+      background: var(--green-light);
+    }
+
+    .assistant-bubble.user {
+      background: #f0f0f0;
+    }
+
+    footer {
+      background: #132117;
+      color: white;
+      margin-top: 24px;
+    }
+
+    .footer-inner {
+      padding: 24px 16px 34px;
+      display: grid;
+      gap: 14px;
+    }
+
+    footer p {
+      margin: 0;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.6;
+    }
+
+    @media (max-width: 920px) {
+      .hero-grid,
+      .agents-grid,
+      .products-top {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .brand-text h1 {
+        font-size: 1.55rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap">
+      <div class="nav-row">
+        <div class="brand">
+          <img src="/blessvegs-logo.png" alt="Bless Vegs logo" class="brand-logo">
+          <div class="brand-text">
+            <h1>Bless Vegs</h1>
+            <p>Biologisch • Niet bespoten • Met liefde geteeld</p>
+          </div>
+        </div>
+
+        <nav class="nav-links">
+          <a href="#producten" class="btn-ghost">Producten</a>
+          <a href="#verhaal" class="btn-ghost">Ons verhaal</a>
+          <a href="https://wa.me/31685122481?text=Hallo%20Bless%20Vegs,%20ik%20heb%20een%20vraag." class="btn-white" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div class="hero-card">
+          <h2>Verse groenten uit eigen tuin</h2>
+          <div class="hero-actions">
+            <a href="#producten" class="btn btn-green">Bekijk producten</a>
+            <a href="https://wa.me/31685122481?text=Hallo%20Bless%20Vegs,%20ik%20wil%20graag%20bestellen." class="btn btn-dark" target="_blank" rel="noopener noreferrer">Bestel via WhatsApp</a>
+          </div>
+
+          <div class="hero-meta">
+            <div>Biologisch geteeld</div>
+            <div>Vers geoogst</div>
+            <div>Direct contact</div>
+          </div>
+        </div>
+
+        <aside class="info-card">
+          <h3>Goed om te weten</h3>
+          <ul class="info-list">
+            <li>Bezorging vanaf €5 en kan oplopen afhankelijk van de afstand.</li>
+            <li>Beschikbaarheid hangt af van oogst en voorraad.</li>
+            <li>Kortingsprijs wordt automatisch gebruikt als die is ingevuld.</li>
+            <li>Bestellen en vragen gaan via WhatsApp.</li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="verhaal">
+    <div class="wrap">
+      <div class="section-card">
+        <h2 class="section-title">Ons verhaal</h2>
+        <p class="section-text">
+          Bless Vegs is een klein en lokaal initiatief waar liefde voor natuur en gezond eten centraal staat. In onze tuin verbouwen wij verschillende groenten op een natuurlijke manier. Alles wordt biologisch geteeld, zonder bestrijdingsmiddelen of chemicaliën. Onze planten krijgen de tijd om te groeien zoals de natuur het bedoeld heeft.<br><br>
+
+          Wij geloven dat goed eten begint bij de grond waar het groeit. Daarom verzorgen wij onze groenten met aandacht, geduld en respect voor de natuur. Elke oogst komt rechtstreeks uit onze tuin en wordt met zorg geselecteerd.<br><br>
+
+          Naast bekende soorten telen wij ook bijzondere en exotische groenten. Op deze manier willen wij mensen laten kennismaken met nieuwe smaken en gezonde producten die niet altijd in de supermarkt te vinden zijn.<br><br>
+
+          Met Bless Vegs hopen wij anderen blij te maken met verse, eerlijke en pure groenten uit eigen tuin.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="products-section" id="producten">
+    <div class="wrap">
+      <div class="products-top">
+        <div>
+          <h2 class="products-title">Producten</h2>
+          <p>Bezorging vanaf €5 en kan oplopen afhankelijk van de afstand.</p>
+        </div>
+
+        <div class="tools">
+          <input id="searchInput" class="search-input" type="text" placeholder="Zoek op productnaam">
+          <button id="refreshBtn" class="btn btn-green" type="button">Verversen</button>
+        </div>
+      </div>
+
+      <div id="statusBox" class="status">Producten laden...</div>
+      <div id="productGrid" class="product-grid"></div>
+    </div>
+  </section>
+
+  <section class="agents-section">
+    <div class="wrap">
+      <div class="agents-grid">
+        <div class="agent-card">
+          <h3>Snelle vragen</h3>
+          <div class="faq-list">
+            <div class="faq-item" data-question="Hebben jullie vandaag verse amsoi?">Hebben jullie vandaag verse amsoi?</div>
+            <div class="faq-item" data-question="Bezorgen jullie ook in Purmerend?">Bezorgen jullie ook in Purmerend?</div>
+            <div class="faq-item" data-question="Wat zijn vandaag de prijzen?">Wat zijn vandaag de prijzen?</div>
+          </div>
+        </div>
+
+        <div class="agent-card">
+          <h3>Klantenservice</h3>
+          <div class="assistant-box">
+            <div id="assistantMessages" class="assistant-messages"></div>
+
+            <form id="assistantForm" class="assistant-form">
+              <input id="assistantInput" class="assistant-input" type="text" placeholder="Typ je vraag...">
+              <button class="btn btn-green" type="submit">Verstuur</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <div>
+        <h4>Bless Vegs</h4>
+        <p>Verse groenten • Direct contact • Bestellen via WhatsApp</p>
+      </div>
+      <div>
+        <p>WhatsApp: 0685122481</p>
+        <p>Bezorging vanaf €5 en kan oplopen afhankelijk van de afstand.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const APP_CONFIG = {
+      supabaseUrl: 'https://fzwvqptjhjlfrriyuqcp.supabase.co',
+      supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6d3ZxcHRqaGpsZnJyaXl1cWNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzQ5NjYsImV4cCI6MjA4OTY1MDk2Nn0.pxU7DNVn_WjyXjBg3KDq8A2oeVqir3_tKGtEQ61kJ4Q',
+      whatsappPhone: '31685122481'
+    };
+
+    const statusBox = document.getElementById('statusBox');
+    const productGrid = document.getElementById('productGrid');
+    const faqItems = document.querySelectorAll('.faq-item');
+    const assistantForm = document.getElementById('assistantForm');
+    const assistantInput = document.getElementById('assistantInput');
+    const assistantMessages = document.getElementById('assistantMessages');
+    const searchInput = document.getElementById('searchInput');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    let allProducts = [];
+
+    function setStatus(message, isError) {
+      statusBox.textContent = message;
+      statusBox.classList.toggle('error', !!isError);
+    }
+
+    function formatMoney(value) {
+      const num = Number(value);
+      if (Number.isNaN(num)) return String(value ?? '');
+      return num.toFixed(2).replace('.', ',');
+    }
+
+    function getImageValue(product) {
+      return product.foto || product.afbeelding || '';
+    }
+
+    function getImageUrl(product) {
+      const raw = getImageValue(product);
+      if (!raw) return '';
+      if (/^https?:\/\//i.test(raw)) return raw;
+      return 'images/' + raw;
+    }
+
+    function getDescription(product) {
+      return product.beschrijving || product.omschrijving || 'Vers product van Bless Vegs.';
+    }
+
+    function getRegularPrice(product) {
+      return product.prijs;
+    }
+
+    function getDiscountPrice(product) {
+      return product.kortingsprijs ?? null;
+    }
+
+    function hasDiscount(product) {
+      const regular = Number(getRegularPrice(product));
+      const discount = Number(getDiscountPrice(product));
+      return !Number.isNaN(regular) && !Number.isNaN(discount) && discount > 0 && discount < regular;
+    }
+
+    function getDisplayPrice(product) {
+      return hasDiscount(product) ? getDiscountPrice(product) : getRegularPrice(product);
+    }
+
+    function getStockText(product) {
+      const voorraad = product.voorraad ?? '';
+      const voorraadType = product.voorraad_type ?? '';
+      const joined = (voorraad + ' ' + voorraadType).trim();
+      return joined || 'Op aanvraag';
+    }
+
+    function buildOrderText(product) {
+      const name = product.name || 'product';
+      const price = getDisplayPrice(product);
+      return 'Hallo Bless Vegs, ik wil graag bestellen:%0A- ' +
+        encodeURIComponent(name) +
+        '%0A- Prijs: €' +
+        encodeURIComponent(formatMoney(price));
+    }
+
+    function buildQuestionText(question) {
+      return 'Hallo Bless Vegs, ' + encodeURIComponent(question);
+    }
+
+    function createProductCard(product) {
+      const article = document.createElement('article');
+      article.className = 'product-card';
+
+      const imageWrap = document.createElement('div');
+      imageWrap.className = 'product-image-wrap';
+
+      const imageUrl = getImageUrl(product);
+
+      if (imageUrl) {
+        const img = document.createElement('img');
+        img.className = 'product-image';
+        img.src = imageUrl;
+        img.alt = product.name || 'Product';
+        img.loading = 'lazy';
+        img.onerror = function () {
+          img.remove();
+          if (!imageWrap.querySelector('.product-placeholder')) {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'product-placeholder';
+            placeholder.textContent = 'Bless Vegs';
+            imageWrap.appendChild(placeholder);
+          }
+        };
+        imageWrap.appendChild(img);
+      } else {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'product-placeholder';
+        placeholder.textContent = 'Bless Vegs';
+        imageWrap.appendChild(placeholder);
+      }
+
+      if (hasDiscount(product)) {
+        const badge = document.createElement('div');
+        badge.className = 'discount-badge';
+        badge.textContent = 'Actie';
+        imageWrap.appendChild(badge);
+      }
+
+      const stockBadge = document.createElement('div');
+      stockBadge.className = 'stock-badge';
+      stockBadge.textContent = getStockText(product);
+      imageWrap.appendChild(stockBadge);
+
+      const body = document.createElement('div');
+      body.className = 'product-body';
+
+      const title = document.createElement('h3');
+      title.className = 'product-title';
+      title.textContent = product.name || 'Product';
+
+      const desc = document.createElement('p');
+      desc.className = 'product-desc';
+      desc.textContent = getDescription(product);
+
+      const priceRow = document.createElement('div');
+      priceRow.className = 'price-row';
+
+      const mainPrice = document.createElement('span');
+      mainPrice.className = 'price-main';
+      mainPrice.textContent = '€' + formatMoney(getDisplayPrice(product));
+      priceRow.appendChild(mainPrice);
+
+      if (hasDiscount(product)) {
+        const oldPrice = document.createElement('span');
+        oldPrice.className = 'price-old';
+        oldPrice.textContent = '€' + formatMoney(getRegularPrice(product));
+        priceRow.appendChild(oldPrice);
+      }
+
+      const stockText = document.createElement('div');
+      stockText.className = 'stock-text';
+      stockText.textContent = 'Voorraad: ' + getStockText(product);
+
+      const actions = document.createElement('div');
+      actions.className = 'product-actions';
+
+      const orderBtn = document.createElement('a');
+      orderBtn.className = 'btn btn-green';
+      orderBtn.href = 'https://wa.me/' + APP_CONFIG.whatsappPhone + '?text=' + buildOrderText(product);
+      orderBtn.target = '_blank';
+      orderBtn.rel = 'noopener noreferrer';
+      orderBtn.textContent = 'Bestel via WhatsApp';
+
+      const questionBtn = document.createElement('a');
+      questionBtn.className = 'btn btn-dark';
+      questionBtn.href = 'https://wa.me/' + APP_CONFIG.whatsappPhone + '?text=' + buildQuestionText('ik heb een vraag over ' + (product.name || 'dit product'));
+      questionBtn.target = '_blank';
+      questionBtn.rel = 'noopener noreferrer';
+      questionBtn.textContent = 'Stel vraag';
+
+      actions.appendChild(orderBtn);
+      actions.appendChild(questionBtn);
+
+      body.appendChild(title);
+      body.appendChild(desc);
+      body.appendChild(priceRow);
+      body.appendChild(stockText);
+      body.appendChild(actions);
+
+      article.appendChild(imageWrap);
+      article.appendChild(body);
+
+      return article;
+    }
+
+    function renderProducts(products) {
+      productGrid.innerHTML = '';
+
+      if (!products.length) {
+        const empty = document.createElement('div');
+        empty.className = 'section-card';
+        empty.style.padding = '18px';
+        empty.textContent = 'Geen producten gevonden.';
+        productGrid.appendChild(empty);
+        return;
+      }
+
+      products.forEach(function (product) {
+        productGrid.appendChild(createProductCard(product));
+      });
+    }
+
+    function filterProducts() {
+      const q = searchInput.value.trim().toLowerCase();
+
+      if (!q) {
+        renderProducts(allProducts);
+        return;
+      }
+
+      const filtered = allProducts.filter(function (product) {
+        const haystack = [
+          product.name,
+          product.beschrijving,
+          product.omschrijving
+        ].filter(Boolean).join(' ').toLowerCase();
+
+        return haystack.includes(q);
+      });
+
+      renderProducts(filtered);
+    }
+
+    async function loadProducts() {
+      setStatus('Producten laden...', false);
+
+      try {
+        const supabase = window.supabase.createClient(
+          APP_CONFIG.supabaseUrl,
+          APP_CONFIG.supabaseAnonKey
+        );
+
+        const response = await supabase
+          .from('producten')
+          .select('*')
+          .order('id', { ascending: true });
+
+        if (response.error) {
+          console.error(response.error);
+          setStatus('Fout bij laden van producten.', true);
+          renderProducts([]);
+          return;
+        }
+
+        allProducts = Array.isArray(response.data) ? response.data : [];
+        renderProducts(allProducts);
+        setStatus(allProducts.length + ' product(en) geladen.', false);
+      } catch (err) {
+        console.error(err);
+        setStatus('Onverwachte fout tijdens laden.', true);
+        renderProducts([]);
+      }
+    }
+
+    function openWhatsApp(question) {
+      window.open(
+        'https://wa.me/' + APP_CONFIG.whatsappPhone + '?text=' + buildQuestionText(question),
+        '_blank',
+        'noopener'
+      );
+    }
+
+    faqItems.forEach(function (item) {
+      item.addEventListener('click', function () {
+        const question = item.getAttribute('data-question') || 'ik heb een vraag';
+        openWhatsApp(question);
+      });
+    });
+
+    function addAssistantBubble(text, type) {
+      const div = document.createElement('div');
+      div.className = 'assistant-bubble ' + type;
+      div.textContent = text;
+      assistantMessages.appendChild(div);
+    }
+
+    assistantForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const question = assistantInput.value.trim().toLowerCase();
+      if (!question) return;
+
+      assistantInput.value = '';
+      addAssistantBubble(question, 'user');
+
+      let reply = '';
+      let whatsappMessage = '';
+
+      if (question.includes('prijs') || question.includes('kosten')) {
+        reply = 'Ik help je graag met prijzen.';
+        whatsappMessage = 'Hallo Bless Vegs, ik wil graag de actuele prijzen weten.';
+      } else if (question.includes('bezorg') || question.includes('lever')) {
+        reply = 'Ik help je graag met bezorginformatie.';
+        whatsappMessage = 'Hallo Bless Vegs, ik wil meer weten over bezorging.';
+      } else if (question.includes('amsoi')) {
+        reply = 'Ik help je graag met de beschikbaarheid van Amsoi.';
+        whatsappMessage = 'Hallo Bless Vegs, hebben jullie vandaag Amsoi beschikbaar?';
+      } else {
+        reply = 'Ik help je graag verder via WhatsApp.';
+        whatsappMessage = 'Hallo Bless Vegs, ik heb een vraag.';
+      }
+
+      addAssistantBubble(reply, 'bot');
+
+      setTimeout(function () {
+        window.open(
+          'https://wa.me/' + APP_CONFIG.whatsappPhone + '?text=' + encodeURIComponent(whatsappMessage),
+          '_blank'
+        );
+      }, 450);
+    });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(function (err) {
+        console.error('Service worker fout:', err);
+      });
+    }
+
+    searchInput.addEventListener('input', filterProducts);
+    refreshBtn.addEventListener('click', loadProducts);
+
+    loadProducts();
+  </script>
+</body>
+</html>
