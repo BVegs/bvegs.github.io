@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bless Vegs</title>
+  <meta name="description" content="Bless Vegs - verse biologische groenten, direct uit eigen tuin." />
+  <meta name="theme-color" content="#14532d" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --green-dark: #0f3d22;
+      --green: #14532d;
+      --green-mid: #1d6a38;
+      --green-light: #eef7ee;
+      --bg: #f5f7f4;
+      --card: #ffffff;
+      --text: #18221b;
+      --muted: #5d6a60;
+      --border: #dce7dd;
+      --danger: #a61b1b;
+      --gold: #f7d36b;
+      --shadow: 0 6px 18px rgba(0,0,0,0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, var(--green-dark), var(--green));
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.28s ease;
+    }
+
+    #splash.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .splash-inner {
+      text-align: center;
+      padding: 24px;
+    }
+
+    .splash-logo {
+      width: 110px;
+      height: 110px;
+      object-fit: contain;
+      margin: 0 auto 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.08);
+      padding: 10px;
+    }
+
+    .splash-title {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .topbar {
+      background: linear-gradient(180deg, var(--green-dark), var(--green));
+      color: white;
+      padding: 18px 16px 22px;
+    }
+
+    .wrap {
+      max-width: 1150px;
+      margin: 0 auto;
+    }
+
+    .nav-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.08);
+      padding: 6px;
+      flex-shrink: 0;
+    }
+
+    .brand-text h1 {
+      margin: 0;
+      font-size: 1.55rem;
+      line-height: 1.1;
+    }
+
+    .brand-text p {
+      margin: 4px 0 0;
+      opacity: 0.95;
+      font-size: 0.96rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn,
+    button,
+    .nav-links a {
+      border: none;
+      cursor: pointer;
+      border-radius: 12px;
+      padding: 11px 15px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: transform 0.05s ease, opacity 0.2s ease;
+    }
+
+    .btn:hover,
+    button:hover,
+    .nav-links a:hover {
+      opacity: 0.94;
+    }
+
+    .btn:active,
+    button:active,
+    .nav-links a:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background: white;
+      color: var(--green-dark);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.12);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+
+    .btn-order {
+      background: var(--green);
+      color: white;
+    }
+
+    .btn-dark {
+      background: #18221b;
+      color: white;
+    }
+
+    .hero {
+      padding: 24px 16px 12px;
+      background: linear-gradient(180deg, var(--green), var(--green-mid) 76%, var(--bg) 76%);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .hero-card,
+    .info-card,
+    .section-card,
+    .agent-card,
+    .product-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .hero-card {
+      padding: 24px;
+    }
+
+    .hero-card h2 {
+      margin: 0 0 12px;
+      font-size: 2rem;
+      line-height: 1.1;
+    }
+
+    .hero-card p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0 0 18px;
+      font-size: 1rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .hero-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .hero-meta div {
+      background: var(--green-light);
+      border-radius: 14px;
+      padding: 12px;
+      text-align: center;
+      font-weight: 700;
+      color: var(--green-dark);
+      font-size: 0.94rem;
+    }
+
+    .info-card {
+      padding: 20px;
+    }
+
+    .info-card h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+
+    .info-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .section,
+    .products-section,
+    .agents-section {
+      padding: 12px 16px;
+    }
+
+    .section-card {
+      padding: 22px;
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      font-size: 1.45rem;
+    }
+
+    .section-text {
+      color: var(--muted);
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .products-top {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+
+    .products-top-left h2 {
+      margin: 0 0 8px;
+      font-size: 1.55rem;
+    }
+
+    .products-top-left p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .tools {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-input {
+      min-width: 220px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 12px;
+      outline: none;
+      font-size: 0.96rem;
+    }
+
+    .search-input:focus {
+      border-color: var(--green);
+    }
+
+    .status {
+      background: #e8f5e9;
+      color: var(--green-dark);
+      border: 1px solid #cfe7d2;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .status.error {
+      background: #fdeaea;
+      border-color: #f3caca;
+      color: var(--danger);
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+      gap: 16px;
+    }
+
+    .product-card {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+    }
+
+    .product-image-wrap {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      background: #edf4ed;
+      overflow: hidden;
+    }
+
+    .product-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-placeholder {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      color: var(--green-dark);
+      font-size: 1.1rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #edf7ee, #d8ead9);
+    }
+
+    .discount-badge,
+    .stock-badge {
+      position: absolute;
+      top: 12px;
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    }
+
+    .discount-badge {
+      left: 12px;
+      background: var(--gold);
+      color: #4f3c00;
+    }
+
+    .stock-badge {
+      right: 12px;
+      background: rgba(20,83,45,0.92);
+      color: white;
+    }
+
+    .product-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .product-title {
+      margin: 0;
+      font-size: 1.18rem;
+      line-height: 1.2;
+    }
+
+    .product-desc {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      min-height: 42px;
+      font-size: 0.95rem;
+    }
+
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .price-main {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--green-dark);
+    }
+
+    .price-old {
+      font-size: 1rem;
+      color: #8b8b8b;
+      text-decoration: line-through;
+    }
+
+    .stock-text {
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .product-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: auto;
+      padding-top: 4px;
+    }
+
+    .agents-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .agent-card {
+      padding: 22px;
+    }
+
+    .agent-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.25rem;
+    }
+
+    .agent-card p {
+      margin: 0 0 14px;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+
+    .faq-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .faq-item {
+      background: var(--green-light);
+      border-radius: 12px;
+      padding: 12px;
+      color: var(--green-dark);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .assistant-box {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fafdf9;
+    }
+
+    .assistant-messages {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .assistant-bubble {
+      padding: 12px;
+      border-radius: 12px;
+      line-height: 1.55;
+      font-size: 0.95rem;
+    }
+
+    .assistant-bubble.bot {
+      background: var(--green-light);
+    }
+
+    .assistant-bubble.user {
+      background: #f0f0f0;
+    }
+
+    .assistant-form {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .assistant-input {
+      flex: 1;
+      min-width: 210px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+      font-size: 0.96rem;
+      background: white;
+    }
+
+    .assistant-note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .footer {
+      background: #132117;
+      color: white;
+      margin-top: 24px;
+    }
+
+    .footer-inner {
+      padding: 24px 16px 34px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .footer h4 {
+      margin: 0 0 8px;
+    }
+
+    .footer p {
+      margin: 0;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.6;
+    }
+
+    .muted-note {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 920px) {
+      .hero-grid,
+      .agents-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .products-top {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .brand-text h1 {
+        font-size: 1.35rem;
+      }
+
+      .hero-card h2 {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="splash">
+    <div class="splash-inner">
+      <img src="/blessvegs-logo.png" alt="Bless Vegs logo" class="splash-logo">
+      <p class="splash-title">Bless Vegs</p>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="wrap">
+      <div class="nav-row">
+        <div class="brand">
+          <img src="/blessvegs-logo.png" alt="Bless Vegs logo" class="brand-logo">
+          <div class="brand-text">
+            <h1>Bless Vegs</h1>
+            <p>Biologisch • Niet bespoten • Met liefde geteeld</p>
+          </div>
+        </div>
+
+        <nav class="nav-links">
+          <a href="#producten" class="btn-secondary">Producten</a>
+          <a href="#verhaal" class="btn-secondary">Ons verhaal</a>
+          <a href="https://wa.me/31685122481?text=Hallo%20Bless%20Vegs,%20ik%20heb%20een%20vraag." class="btn-primary" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div class="hero-card">
+          <h2>Verse Surinaamse groenten, direct uit eigen tuin</h2>
+          <p>
+            Bless Vegs levert verse, eerlijke groenten met liefde geteeld.
+            Bestel makkelijk via WhatsApp en bekijk hieronder wat er beschikbaar is.
+          </p>
+
+          <div class="hero-actions">
+            <a href="#producten" class="btn btn-order">Bekijk producten</a>
+            <a href="https://wa.me/31685122481?text=Hallo%20Bless%20Vegs,%20ik%20wil%20graag%20bestellen." class="btn btn-dark" target="_blank" rel="noopener noreferrer">Bestel via WhatsApp</a>
+          </div>
+
+          <div class="hero-meta">
+            <div>Vers geoogst</div>
+            <div>Biologisch geteeld</div>
+            <div>Direct contact</div>
+          </div>
+        </div>
+
+        <aside class="info-card">
+          <h3>Goed om te weten</h3>
+          <ul class="info-list">
+            <li>Bezorging vanaf €5 en kan oplopen afhankelijk van de afstand.</li>
+            <li>Beschikbaarheid hangt af van oogst en voorraad.</li>
+            <li>Bestellen en vragen gaan snel via WhatsApp.</li>
+            <li>Kortingsprijs wordt automatisch gebruikt als die is ingevuld.</li>
+          </ul>
+          <p class="muted-note">
+            De site blijft werken als een product nog geen foto, beschrijving of korting heeft.
+          </p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="verhaal">
+    <div class="wrap">
+      <div class="section-card">
+        <h2 class="section-title">Ons verhaal</h2>
+        <p class="section-text">
+          Bless Vegs staat voor verse, biologische groenten rechtstreeks uit eigen tuin.
+          Geen massaproductie, geen onnodige troep, maar producten die met zorg zijn geteeld.
+          We willen dat mensen weer echte smaak, verse oogst en direct contact met de verkoper ervaren.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="products-section" id="producten">
+    <div class="wrap">
+      <div class="products-top">
+        <div class="products-top-left">
+          <h2>Producten</h2>
+          <p>De lijst hieronder laadt uit Supabase. Foto’s worden uit de map <strong>images</strong> gehaald.</p>
+        </div>
+
+        <div class="tools">
+          <input id="searchInput" class="search-input" type="text" placeholder="Zoek op productnaam">
+          <button id="refreshBtn" class="btn btn-order" type="button">Verversen</button>
+        </div>
+      </div>
+
+      <div id="statusBox" class="status">Producten laden...</div>
+      <div id="productGrid" class="product-grid"></div>
+    </div>
+  </section>
+
+  <section class="agents-section">
+    <div class="wrap">
+      <div class="agents-grid">
+        <div class="agent-card">
+          <h3>Website assistent</h3>
+          <p>
+            Deze site is voorbereid op een web-agent. Tot de Render-backend live staat,
+            helpt dit deel met slimme doorsturing naar WhatsApp en vaste vragen.
+          </p>
+
+          <div class="faq-list">
+            <div class="faq-item" data-question="Hebben jullie vandaag verse amsoi?">Hebben jullie vandaag verse amsoi?</div>
+            <div class="faq-item" data-question="Bezorgen jullie ook in Purmerend?">Bezorgen jullie ook in Purmerend?</div>
+            <div class="faq-item" data-question="Wat zijn vandaag de prijzen?">Wat zijn vandaag de prijzen?</div>
+          </div>
+        </div>
+
+        <div class="agent-card">
+          <h3>AI klantenservice</h3>
+          <p>
+            Dit blok is klaar voor de echte agent-backend. Zonder backend krijg je hier alvast een nette fallback.
+            Met Render kunnen we hier echte auto replies op aansluiten.
+          </p>
+
+          <div class="assistant-box">
+            <div id="assistantMessages" class="assistant-messages">
+              <div class="assistant-bubble bot">
+                Hallo, ik ben de Bless Vegs assistent. Stel een vraag over producten, prijzen of bezorging.
+              </div>
+            </div>
+
+            <form id="assistantForm" class="assistant-form">
+              <input id="assistantInput" class="assistant-input" type="text" placeholder="Typ je vraag...">
+              <button class="btn btn-order" type="submit">Verstuur</button>
+            </form>
+
+            <div class="assistant-note">
+              Zonder backend gaat je vraag automatisch naar WhatsApp. Met Render kunnen we hier echte auto replies activeren.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div>
+        <h4>Bless Vegs</h4>
+        <p>Verse groenten • Direct contact • Bestellen via WhatsApp</p>
+      </div>
+      <div>
+        <p>WhatsApp: 0685122481</p>
+        <p>Bezorging vanaf €5 en kan oplopen afhankelijk van de afstand.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const APP_CONFIG = {
+      supabaseUrl: 'https://fzwvqptjhjlfrriyuqcp.supabase.co',
+      supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6d3ZxcHRqaGpsZnJyaXl1cWNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzQ5NjYsImV4cCI6MjA4OTY1MDk2Nn0.pxU7DNVn_WjyXjBg3KDq8A2oeVqir3_tKGtEQ61kJ4Q',
+      whatsappPhone: '31685122481',
+      agentApiUrl: ''
+    };
+
+    const splash = document.getElementById('splash');
+    const statusBox = document.getElementById('statusBox');
+    const productGrid = document.getElementById('productGrid');
+    const searchInput = document.getElementById('searchInput');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const faqItems = document.querySelectorAll('.faq-item');
+    const assistantForm = document.getElementById('assistantForm');
+    const assistantInput = document.getElementById('assistantInput');
+    const assistantMessages = document.getElementById('assistantMessages');
+
+    const supabase = window.supabase.createClient(
+      APP_CONFIG.supabaseUrl,
+      APP_CONFIG.supabaseAnonKey
+    );
+
+    let allProducts = [];
+
+    function hideSplash() {
+      splash.classList.add('hidden');
+      setTimeout(() => {
+        splash.style.display = 'none';
+      }, 320);
+    }
+
+    function setStatus(message, isError = false) {
+      statusBox.textContent = message;
+      statusBox.classList.toggle('error', isError);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function formatMoney(value) {
+      const num = Number(value);
+      if (Number.isNaN(num)) return String(value ?? '');
+      return num.toFixed(2).replace('.', ',');
+    }
+
+    function getImageValue(product) {
+      return product.foto || product.afbeelding || '';
+    }
+
+    function getImageUrl(product) {
+      const raw = getImageValue(product);
+      if (!raw) return '';
+      if (/^https?:\/\//i.test(raw)) return raw;
+      return `images/${raw}`;
+    }
+
+    function getDescription(product) {
+      return product.beschrijving || product.omschrijving || 'Vers product van Bless Vegs.';
+    }
+
+    function getRegularPrice(product) {
+      return product.prijs;
+    }
+
+    function getDiscountPrice(product) {
+      return product.kortingsprijs ?? null;
+    }
+
+    function hasDiscount(product) {
+      const regular = Number(getRegularPrice(product));
+      const discount = Number(getDiscountPrice(product));
+      return !Number.isNaN(regular) && !Number.isNaN(discount) && discount > 0 && discount < regular;
+    }
+
+    function getDisplayPrice(product) {
+      return hasDiscount(product) ? getDiscountPrice(product) : getRegularPrice(product);
+    }
+
+    function getStockText(product) {
+      const voorraad = product.voorraad ?? '';
+      const voorraadType = product.voorraad_type ?? '';
+      const joined = `${voorraad} ${voorraadType}`.trim();
+      return joined || 'Op aanvraag';
+    }
+
+    function buildOrderText(product) {
+      const name = product.name || 'product';
+      const price = getDisplayPrice(product);
+      return `Hallo Bless Vegs, ik wil graag bestellen:%0A- ${encodeURIComponent(name)}%0A- Prijs: €${encodeURIComponent(formatMoney(price))}`;
+    }
+
+    function buildQuestionText(question) {
+      return `Hallo Bless Vegs, ${encodeURIComponent(question)}`;
+    }
+
+    function createImageHtml(productName, imageUrl) {
+      if (!imageUrl) {
+        return `<div class="product-placeholder">Bless Vegs</div>`;
+      }
+
+      const safeAlt = escapeHtml(productName || 'Product');
+      const safeSrc = escapeHtml(imageUrl);
+
+      return `
+        <img
+          class="product-image"
+          src="${safeSrc}"
+          alt="${safeAlt}"
+          loading="lazy"
+          onerror="this.remove(); this.parentNode.insertAdjacentHTML('beforeend', '<div class=&quot;product-placeholder&quot;>Bless Vegs</div>');"
+        >
+      `;
+    }
+
+    function renderProductCard(product) {
+      const imageUrl = getImageUrl(product);
+      const description = getDescription(product);
+      const regularPrice = getRegularPrice(product);
+      const discountPrice = getDiscountPrice(product);
+      const discount = hasDiscount(product);
+      const stockText = getStockText(product);
+
+      return `
+        <article class="product-card">
+          <div class="product-image-wrap">
+            ${createImageHtml(product.name, imageUrl)}
+            ${discount ? `<div class="discount-badge">Actie</div>` : ''}
+            <div class="stock-badge">${escapeHtml(stockText)}</div>
+          </div>
+
+          <div class="product-body">
+            <h3 class="product-title">${escapeHtml(product.name || 'Product')}</h3>
+            <p class="product-desc">${escapeHtml(description)}</p>
+
+            <div class="price-row">
+              ${
+                discount
+                  ? `
+                    <span class="price-main">€${escapeHtml(formatMoney(discountPrice))}</span>
+                    <span class="price-old">€${escapeHtml(formatMoney(regularPrice))}</span>
+                  `
+                  : `<span class="price-main">€${escapeHtml(formatMoney(regularPrice))}</span>`
+              }
+            </div>
+
+            <div class="stock-text">Voorraad: ${escapeHtml(stockText)}</div>
+
+            <div class="product-actions">
+              <a
+                class="btn btn-order"
+                href="https://wa.me/${APP_CONFIG.whatsappPhone}?text=${buildOrderText(product)}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Bestel via WhatsApp
+              </a>
+
+              <a
+                class="btn btn-dark"
+                href="https://wa.me/${APP_CONFIG.whatsappPhone}?text=${buildQuestionText(`ik heb een vraag over ${product.name || 'dit product'}`)}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Stel vraag
+              </a>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderProducts(products) {
+      if (!products.length) {
+        productGrid.innerHTML = `<div class="section-card">Geen producten gevonden.</div>`;
+        return;
+      }
+
+      productGrid.innerHTML = products.map(renderProductCard).join('');
+    }
+
+    function filterProducts() {
+      const q = searchInput.value.trim().toLowerCase();
+
+      if (!q) {
+        renderProducts(allProducts);
+        return;
+      }
+
+      const filtered = allProducts.filter((product) => {
+        const haystack = [
+          product.name,
+          product.beschrijving,
+          product.omschrijving
+        ].filter(Boolean).join(' ').toLowerCase();
+
+        return haystack.includes(q);
+      });
+
+      renderProducts(filtered);
+    }
+
+    async function loadProducts() {
+      setStatus('Producten laden...');
+
+      try {
+        const { data, error } = await supabase
+          .from('producten')
+          .select('*')
+          .order('id', { ascending: true });
+
+        if (error) {
+          console.error(error);
+          setStatus('Fout bij laden van producten.', true);
+          productGrid.innerHTML = `<div class="section-card">Producten konden niet worden geladen.</div>`;
+          return;
+        }
+
+        allProducts = Array.isArray(data) ? data : [];
+        renderProducts(allProducts);
+        setStatus(`${allProducts.length} product(en) geladen.`);
+      } catch (err) {
+        console.error(err);
+        setStatus('Onverwachte fout tijdens laden.', true);
+        productGrid.innerHTML = `<div class="section-card">Er is iets misgegaan bij het laden.</div>`;
+      } finally {
+        hideSplash();
+      }
+    }
+
+    function openWhatsApp(question) {
+      window.open(
+        `https://wa.me/${APP_CONFIG.whatsappPhone}?text=${buildQuestionText(question)}`,
+        '_blank',
+        'noopener'
+      );
+    }
+
+    function bindFaqActions() {
+      faqItems.forEach((item) => {
+        item.addEventListener('click', () => {
+          const question = item.getAttribute('data-question') || 'ik heb een vraag';
+          openWhatsApp(question);
+        });
+      });
+    }
+
+    function addAssistantBubble(text, type) {
+      const div = document.createElement('div');
+      div.className = `assistant-bubble ${type}`;
+      div.textContent = text;
+      assistantMessages.appendChild(div);
+    }
+
+    async function handleAssistant(question) {
+      addAssistantBubble(question, 'user');
+
+      if (!APP_CONFIG.agentApiUrl) {
+        const fallback = 'De slimme agent-backend is nog niet live. Ik stuur je door naar WhatsApp voor direct contact.';
+        addAssistantBubble(fallback, 'bot');
+        setTimeout(() => openWhatsApp(question), 350);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${APP_CONFIG.agentApiUrl}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: question })
+        });
+
+        if (!response.ok) throw new Error('Agent response error');
+
+        const result = await response.json();
+        addAssistantBubble(result.reply || 'Ik heb nu geen antwoord gekregen van de agent.', 'bot');
+      } catch (err) {
+        console.error(err);
+        addAssistantBubble('De agent-backend reageert nu niet. Ik stuur je door naar WhatsApp.', 'bot');
+        setTimeout(() => openWhatsApp(question), 350);
+      }
+    }
+
+    function bindAssistantForm() {
+      assistantForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const question = assistantInput.value.trim();
+        if (!question) return;
+        assistantInput.value = '';
+        await handleAssistant(question);
+      });
+    }
+
+    function registerServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch((err) => {
+          console.error('Service worker fout:', err);
+        });
+      }
+    }
+
+    searchInput.addEventListener('input', filterProducts);
+    refreshBtn.addEventListener('click', loadProducts);
+
+    window.addEventListener('load', () => {
+      bindFaqActions();
+      bindAssistantForm();
+      registerServiceWorker();
+      loadProducts();
+    });
+  </script>
+</body>
+</html>
