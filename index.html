@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bless Vegs</title>
+
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#14532d">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  margin:0;
+  font-family: Arial;
+  background:#f5f7f4;
+}
+
+/* SPLASH */
+#splash {
+  position:fixed;
+  inset:0;
+  background:#14532d;
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:2rem;
+  z-index:9999;
+}
+
+/* HEADER */
+header {
+  background:linear-gradient(#0f3d22,#14532d);
+  color:white;
+  text-align:center;
+  padding:25px;
+}
+
+.logo {
+  width:80px;
+  margin-bottom:10px;
+}
+
+/* SECTIONS */
+.container {
+  padding:20px;
+  max-width:1100px;
+  margin:auto;
+}
+
+.box {
+  background:white;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:20px;
+}
+
+/* PRODUCTS */
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:15px;
+}
+
+.card {
+  background:white;
+  padding:15px;
+  border-radius:12px;
+}
+
+.btn {
+  display:inline-block;
+  background:#14532d;
+  color:white;
+  padding:10px;
+  border-radius:8px;
+  text-decoration:none;
+  margin-top:10px;
+}
+
+/* AI */
+.ai-box {
+  background:#eef7ee;
+}
+</style>
+</head>
+
+<body>
+
+<div id="splash">🌱 Bless Vegs</div>
+
+<header>
+<img src="blessvegs-logo.png" class="logo">
+<h1>Bless Vegs</h1>
+<p>Biologisch • Niet bespoten • Met liefde geteeld</p>
+</header>
+
+<div class="container">
+
+<div class="box">
+<h2>Ons verhaal</h2>
+<p>
+Bless Vegs staat voor verse, biologische groenten rechtstreeks uit eigen tuin.
+Geen pesticiden, geen massaproductie — puur natuur, met zorg geteeld.
+</p>
+</div>
+
+<div class="box">
+<h2>Vers uit onze tuin</h2>
+<p>Bestel eenvoudig via WhatsApp.</p>
+<div id="status">Laden...</div>
+</div>
+
+<div id="products" class="grid"></div>
+
+<div class="box ai-box">
+<h2>AI Klantenservice</h2>
+<p>Stel je vraag direct via WhatsApp:</p>
+<a class="btn" href="https://wa.me/31685122481?text=Hallo%20BlessVegs%20ik%20heb%20een%20vraag">Chat via WhatsApp</a>
+</div>
+
+</div>
+
+<script>
+
+const splash = document.getElementById("splash");
+function hideSplash(){
+  splash.style.display="none";
+}
+
+/* SUPABASE */
+const supabase = window.supabase.createClient(
+'https://fzwvqptjhjlfrriyuqcp.supabase.co',
+'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+);
+
+async function loadProducts(){
+  try{
+    const {data,error} = await supabase
+    .from('producten')
+    .select('*');
+
+    if(error) throw error;
+
+    document.getElementById("status").innerText = data.length+" producten geladen";
+
+    const box = document.getElementById("products");
+    box.innerHTML="";
+
+    data.forEach(p=>{
+      box.innerHTML+=`
+      <div class="card">
+        <h3>${p.name}</h3>
+        <p>€${p.prijs}</p>
+        <p>Voorraad: ${p.voorraad} ${p.voorraad_type}</p>
+        <a class="btn" href="https://wa.me/31685122481?text=Ik wil ${p.name} bestellen">Bestel</a>
+      </div>
+      `;
+    });
+
+  }catch(e){
+    document.getElementById("status").innerText="Fout laden producten";
+  }finally{
+    hideSplash();
+  }
+}
+
+window.onload = loadProducts;
+
+</script>
+
+</body>
+</html>
