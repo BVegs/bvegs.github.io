@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bless Vegs</title>
+
+  <style>
+    body { font-family: Arial; margin:0; background:#f7f7f7; }
+    header { background:#14532d; color:#fff; padding:15px; text-align:center; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; padding:15px; }
+    .card { background:#fff; border-radius:10px; padding:12px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+    .card img { width:100%; border-radius:8px; }
+    .title { font-weight:bold; margin-top:10px; }
+    .price { color:#14532d; font-weight:bold; }
+    .ref { font-size:12px; color:#666; }
+    .options { margin-top:10px; }
+    .options button { margin:3px; padding:6px 10px; border-radius:6px; border:1px solid #ccc; cursor:pointer; }
+    .options button.active { background:#14532d; color:#fff; }
+    .total { margin-top:8px; font-weight:bold; }
+    .btn { margin-top:10px; display:block; text-align:center; background:#25D366; color:#fff; padding:10px; border-radius:8px; text-decoration:none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Bless Vegs</h1>
+</header>
+
+<div class="grid" id="products"></div>
+
+<script>
+const API = "https://blessvegs-backend.onrender.com/public/products";
+const PHONE = "31685122481";
+
+function formatEUR(n){ return new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(n); }
+
+function createCard(p){
+  const card = document.createElement("div");
+  card.className = "card";
+
+  const img = document.createElement("img");
+  img.src = p.foto ? `images/${p.foto}` : "";
+
+  const title = document.createElement("div");
+  title.className = "title";
+  title.textContent = p.name;
+
+  const price = document.createElement("div");
+  price.className = "price";
+  price.textContent = p.display_prijs_label;
+
+  const ref = document.createElement("div");
+  ref.className = "ref";
+  if(p.display_referentieprijs_label) ref.textContent = p.display_referentieprijs_label;
+
+  card.append(img,title,price,ref);
+
+  let selected = p.bestelopties[0];
+
+  if(p.bestelopties.length > 1){
+    const optWrap = document.createElement("div");
+    optWrap.className = "options";
+
+    p.bestelopties.forEach(opt=>{
+      const b = document.createElement("button");
+      b.textContent = opt.label;
+      if(opt === selected) b.classList.add("active");
+
+      b.onclick = ()=>{
+        selected = opt;
+        [...optWrap.children].forEach(x=>x.classList.remove("active"));
+        b.classList.add("active");
+        total.textContent = formatEUR(opt.prijs);
+      };
+
+      optWrap.appendChild(b);
+    });
+
+    card.appendChild(optWrap);
+  }
+
+  const total = document.createElement("div");
+  total.className = "total";
+  total.textContent = formatEUR(selected.prijs);
+
+  const btn = document.createElement("a");
+  btn.className = "btn";
+  btn.textContent = "Bestel via WhatsApp";
+
+  btn.onclick = ()=>{
+    const msg = `Goedenavond, ik wil graag ${selected.label} ${p.name} bestellen. Totaal: ${formatEUR(selected.prijs)}`;
+    window.open(`https://wa.me/${PHONE}?text=${encodeURIComponent(msg)}`);
+  };
+
+  card.append(total,btn);
+
+  return card;
+}
+
+async function load(){
+  const res = await fetch(API);
+  const json = await res.json();
+
+  const root = document.getElementById("products");
+  root.innerHTML = "";
+
+  json.data.forEach(p=>{
+    root.appendChild(createCard(p));
+  });
+}
+
+load();
+</script>
+
+</body>
+</html>
